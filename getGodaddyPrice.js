@@ -1,29 +1,18 @@
-const path = require("path");
-const chrome = require("selenium-webdriver/chrome");
-const { Builder, By, Key, until } = require("selenium-webdriver");
+const { By, until } = require("selenium-webdriver");
+const getDriver = require("./getDriver");
 
 module.exports = async (domain) => {
   let response = [];
   let url = `https://in.godaddy.com/domainsearch/find?domainToCheck=${domain}`;
-  let os = process.platform;
-  let chrome_path = path.join(__dirname, `./chromedriver_${os}.exe`);
-  let service = new chrome.ServiceBuilder(chrome_path).build();
-  chrome.setDefaultService(service);
-  let driver = new Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(new chrome.Options().headless())
-    .build();
+  let resultWrapper = '.spin-results-wrap > div[data-cy="domain-name"]';
+  let resultBox = ".spin-results-wrap > .domain-result";
+  let driver = getDriver();
   await driver.get(url);
-  await driver.wait(
-    until.elementLocated(By.css(".spin-results-wrap > .domain-result")),
-    10000
-  );
-  let results = await driver.findElements(
-    By.css(".spin-results-wrap > .domain-result")
-  );
+  await driver.wait(until.elementLocated(By.css(resultWrapper)), 10000);
+  let results = await driver.findElements(By.css(resultBox));
   for (let result of results) {
     response.push({
-    //   name: await result.findElement(By.css(".spin-results-wrap-domain-name")).getText(),
+      name: await result.findElement(By.css(".domain-name .h4")).getText(),
       price: await result.findElement(By.css(".dpp-price")).getText(),
     });
   }
