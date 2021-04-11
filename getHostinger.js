@@ -22,6 +22,7 @@ module.exports = async (domain) => {
       price: await getPrice(result),
     });
   }
+  await driver.quit()
   return { total: response.length, result: response };
 };
 
